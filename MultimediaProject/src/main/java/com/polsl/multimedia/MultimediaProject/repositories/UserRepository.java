@@ -18,6 +18,6 @@ public interface UserRepository extends CrudRepository <User, Long>{
 
     User findByUsername(String username);
 
-    boolean existById(long id);
+    // existById(long id);
 
 }
