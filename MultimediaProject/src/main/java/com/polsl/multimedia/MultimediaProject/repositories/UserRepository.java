@@ -1,22 +1,21 @@
 package com.polsl.multimedia.MultimediaProject.repositories;
 
-import com.polsl.multimedia.MultimediaProject.models.User;
+import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import org.springframework.data.repository.CrudRepository;
-
-import java.util.List;
-import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 /**
  * Created by Ryukki on 20.04.2018.
  */
-public interface UserRepository extends CrudRepository <User, Long>{
-    //List<User> findAll();
+@Repository
+public interface UserRepository extends CrudRepository <AppUser, Long>{
+    //List<AppUser> findAll();
 
-    //Optional<User> findById(Long id);
+    //Optional<AppUser> findById(Long id);
 
     boolean existsByUsername(String username);
 
-    User findByUsername(String username);
+    AppUser findByUsername(String username);
 
     // existById(long id);
 

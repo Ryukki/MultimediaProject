@@ -1,6 +1,10 @@
 package com.polsl.multimedia.MultimediaProject.models;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,7 +13,7 @@ import java.util.List;
 
 @Entity
 
-public class User {
+public class AppUser {
     @Id
     @GeneratedValue
     @Column(name = "ID", nullable = false)
@@ -22,7 +26,15 @@ public class User {
     private String password;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<Photo> photos;
+    private List<Photo> photos = new ArrayList<>();
+
+    public AppUser() {
+    }
+
+    public AppUser(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 
     public Long getId() {
         return id;
