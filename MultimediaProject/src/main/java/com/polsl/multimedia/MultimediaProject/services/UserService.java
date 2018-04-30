@@ -26,6 +26,9 @@ public class UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    PhotoService photoService;
+
     @PostConstruct
     private void createDummyUser(){
         AppUser dummyAppUser = new AppUser("user", passwordEncoder.encode("user"));
@@ -38,11 +41,22 @@ public class UserService {
     }
 
     public AppUser getUserWithUsername(String username){
-        AppUser appUser = new AppUser();
+        AppUser appUser = null;
         if(userRepository.existsByUsername(username)){
             appUser = userRepository.findByUsername(username);
         }
         return appUser;
+    }
+
+    public String getUsersPhotoPath(AppUser appUser, Long photoId){
+        Photo photo = photoService.getPhotoWithId(photoId);
+        if(photo!=null){
+            List<Photo> photoList = appUser.getPhotos();
+            if(photoList.contains(photo)){
+                return photo.getNormalResolutionPath();
+            }
+        }
+        return "";
     }
 
     public boolean checkLoginCredentials(String username, String password){
