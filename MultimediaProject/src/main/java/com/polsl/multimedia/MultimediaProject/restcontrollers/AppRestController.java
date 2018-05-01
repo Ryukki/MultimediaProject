@@ -1,19 +1,17 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
-import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

@@ -1,8 +1,5 @@
 package com.polsl.multimedia.MultimediaProject.models;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
