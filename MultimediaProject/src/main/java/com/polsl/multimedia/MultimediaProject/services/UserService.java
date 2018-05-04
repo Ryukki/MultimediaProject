@@ -24,10 +24,10 @@ public class UserService {
     private PhotoRepository photoRepository;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    PhotoService photoService;
+    private PhotoService photoService;
 
     @PostConstruct
     private void createDummyUser(){
@@ -37,7 +37,8 @@ public class UserService {
 
     public AppUser createUser(String username, String password){
         AppUser appUser = new AppUser(username, passwordEncoder.encode(password));
-        return userRepository.save(appUser);
+        appUser = userRepository.save(appUser);
+        return appUser;
     }
 
     public AppUser getUserWithUsername(String username){

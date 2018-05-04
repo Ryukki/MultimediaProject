@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MultimediaProject/MultimediaProject.iml" filepath="$PROJECT_DIR$/MultimediaProject/MultimediaProject.iml" />
-      <module fileurl="file://F:\Spring\MultimediaProject\MultimediaProject\MultimediaProject.iml" filepath="F:\Spring\MultimediaProject\MultimediaProject\MultimediaProject.iml" />
     </modules>
   </component>
 </project>

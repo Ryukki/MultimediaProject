@@ -21,10 +21,10 @@ import java.util.Optional;
 public class PhotoService {
 
     @Autowired
-    PhotoRepository photoRepository;
+    private PhotoRepository photoRepository;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     public Photo getPhotoWithId(Long id){
         Optional<Photo> photo = photoRepository.findById(id);
@@ -34,29 +34,34 @@ public class PhotoService {
         return null;
     }
 
-    public Long addPhoto(AppUser appUser, MultipartFile multipartFile){
+    public Long addPhoto(AppUser appUser, MultipartFile multipartFile) throws IOException {
         Photo photo = new Photo();
-        String path = PhotoService.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        try {
-            String decodedPath = "resources/" + appUser.getId();//URLDecoder.decode(path, "UTF-8") + "resources/" + appUser.getId();
-            new File(decodedPath).mkdirs();
-            decodedPath +=  "/" + multipartFile.getOriginalFilename();
-            System.out.println(decodedPath);
-            File photoFile = new File(decodedPath);
-            photoFile.createNewFile();
-            FileOutputStream fos = new FileOutputStream(photoFile);
-            fos.write(multipartFile.getBytes());
-            fos.close();
-            photo.setNormalResolutionPath(decodedPath);
-            photo = photoRepository.save(photo);
-            List<Photo> listOfUserPhotos = appUser.getPhotos();
-            listOfUserPhotos.add(photo);
-            appUser.setPhotos(listOfUserPhotos);
-            userRepository.save(appUser);
-            return photo.getId();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        String filePath = "resources/" + appUser.getId();
+        new File(filePath).mkdirs();
+        filePath +=  "/" + multipartFile.getOriginalFilename();
+
+        Photo checkForExistingEntry = photoRepository.findByNormalResolutionPath(filePath);
+        if(checkForExistingEntry!=null){
+            System.out.println("photo with path \"" + filePath + "\" already in DB");
+            return -1L;//photo with this path already in DB
         }
-        return -1L;
+
+        photo.setNormalResolutionPath(filePath);
+        photo = photoRepository.save(photo);
+        appUser.getPhotos().add(photo);
+        userRepository.save(appUser);
+
+        File photoFile = new File(filePath);
+        boolean newFile = photoFile.createNewFile();
+        if(!newFile){
+            System.out.println("File " + filePath + " already exists");
+            return -2L;//file already existed
+        }
+        FileOutputStream fos = new FileOutputStream(photoFile);
+        fos.write(multipartFile.getBytes());
+        fos.close();
+
+        return photo.getId();
     }
 }
