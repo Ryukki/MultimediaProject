@@ -13,11 +13,6 @@ import java.util.List;
  */
 
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "AppUser.findAll", query = "SELECT a FROM AppUser a")
-        , @NamedQuery(name = "AppUser.findById", query = "SELECT a FROM AppUser a WHERE a.id = :id")
-        , @NamedQuery(name = "AppUser.findByPassword", query = "SELECT a FROM AppUser a WHERE a.password = :password")
-        , @NamedQuery(name = "AppUser.findByUsername", query = "SELECT a FROM AppUser a WHERE a.username = :username")})
 public class AppUser implements Serializable {
 
     private static final long serialVersionUID = 1L;

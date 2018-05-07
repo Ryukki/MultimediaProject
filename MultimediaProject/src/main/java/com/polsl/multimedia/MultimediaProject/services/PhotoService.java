@@ -48,6 +48,7 @@ public class PhotoService {
         }
 
         photo.setNormalResolutionPath(filePath);
+        photo.setUserID(appUser);
         photo = photoRepository.save(photo);
         appUser.getPhotos().add(photo);
         userRepository.save(appUser);

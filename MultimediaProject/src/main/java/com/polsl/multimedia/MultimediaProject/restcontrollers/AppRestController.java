@@ -1,6 +1,7 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
+import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
 import org.apache.commons.io.FileUtils;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by Ryukki on 26.04.2018.
@@ -26,9 +28,17 @@ public class AppRestController {
     @Autowired
     private PhotoService photoService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @RequestMapping(value = "/registerUser", method = RequestMethod.POST)
     public Long registerUser(@RequestParam String username, @RequestParam String password){
         return userService.createUser(username, password).getId();
+    }
+
+    @RequestMapping(value = "/users")
+    public List<AppUser> findAllUsers() {
+        return userRepository.findAll();
     }
 
     @RequestMapping(value = "/displayPhoto", produces = MediaType.IMAGE_JPEG_VALUE)

@@ -31,7 +31,7 @@ public class UserService {
 
     @PostConstruct
     private void createDummyUser(){
-        AppUser dummyAppUser = new AppUser("user", passwordEncoder.encode("user"));
+        AppUser dummyAppUser = new AppUser(passwordEncoder.encode("user"), "user");
         userRepository.save(dummyAppUser);
     }
 

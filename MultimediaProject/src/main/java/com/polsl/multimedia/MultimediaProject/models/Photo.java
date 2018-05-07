@@ -10,14 +10,6 @@ import java.util.Date;
  */
 
 @Entity
-@NamedQueries({
-        @NamedQuery(name = "Photo.findAll", query = "SELECT p FROM Photo p")
-        , @NamedQuery(name = "Photo.findById", query = "SELECT p FROM Photo p WHERE p.id = :id")
-        , @NamedQuery(name = "Photo.findByCameraName", query = "SELECT p FROM Photo p WHERE p.cameraName = :cameraName")
-        , @NamedQuery(name = "Photo.findByDate", query = "SELECT p FROM Photo p WHERE p.date = :date")
-        , @NamedQuery(name = "Photo.findByMiniaturePath", query = "SELECT p FROM Photo p WHERE p.miniaturePath = :miniaturePath")
-        , @NamedQuery(name = "Photo.findByNormalResolutionPath", query = "SELECT p FROM Photo p WHERE p.normalResolutionPath = :normalResolutionPath")
-        , @NamedQuery(name = "Photo.findByPhotoName", query = "SELECT p FROM Photo p WHERE p.photoName = :photoName")})
 public class Photo implements Serializable {
 
     private static final long serialVersionUID = 1L;
