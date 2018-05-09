@@ -19,13 +19,13 @@ public class AppUser implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Basic(optional = false)
-    @Column(name = "id")
+    @Column(name = "id", unique = true)
     private Long id;
     @Basic(optional = false)
     @Column(name = "password")
     private String password;
     @Basic(optional = false)
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userID")
     private List<Photo> photoCollection;
@@ -37,13 +37,13 @@ public class AppUser implements Serializable {
         this.id = id;
     }
 
-    public AppUser(Long id, String password, String username) {
+    public AppUser(Long id, String username, String password) {
         this.id = id;
         this.password = password;
         this.username = username;
     }
 
-    public AppUser(String password, String username) {
+    public AppUser(String username, String password) {
         this.password = password;
         this.username = username;
     }
