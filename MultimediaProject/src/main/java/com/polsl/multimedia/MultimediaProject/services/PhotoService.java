@@ -48,6 +48,7 @@ public class PhotoService {
         }
 
         photo.setNormalResolutionPath(filePath);
+        photo.setUserID(appUser);
         photo = photoRepository.save(photo);
         appUser.getPhotos().add(photo);
         userRepository.save(appUser);
@@ -56,7 +57,7 @@ public class PhotoService {
         boolean newFile = photoFile.createNewFile();
         if(!newFile){
             System.out.println("File " + filePath + " already exists");
-            return -2L;//file already existed
+            return -2L;//file already exists
         }
         FileOutputStream fos = new FileOutputStream(photoFile);
         fos.write(multipartFile.getBytes());

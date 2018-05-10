@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="MultimediaProject" />
+        <module name="SIM" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="MultimediaProject" target="1.8" />
+      <module name="SIM" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

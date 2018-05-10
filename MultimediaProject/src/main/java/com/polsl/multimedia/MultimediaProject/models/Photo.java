@@ -1,6 +1,8 @@
 package com.polsl.multimedia.MultimediaProject.models;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,26 +10,35 @@ import java.util.Date;
  */
 
 @Entity
-public class Photo {
+public class Photo implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
-    @Column(name = "ID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Basic(optional = false)
+    @Column(name = "id")
     private Long id;
-
-    @Column(name = "photoName")
-    private String photoName;
-
-    @Column(name = "date")
-    private Date date;
-
-    @Column(name = "normalResolutionPath")
-    private String normalResolutionPath;
-
-    @Column(name = "miniaturePath")
-    private String miniaturePath;
-
-    @Column(name = "cameraName")
+    @Column(name = "camera_name")
     private String cameraName;
+    @Column(name = "date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date date;
+    @Column(name = "miniature_path")
+    private String miniaturePath;
+    @Column(name = "normal_resolution_path")
+    private String normalResolutionPath;
+    @Column(name = "photo_name")
+    private String photoName;
+    @JoinColumn(name = "userID", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private AppUser userID;
+
+    public Photo() {
+    }
+
+    public Photo(Long id) {
+        this.id = id;
+    }
 
     public Long getId() {
         return id;
@@ -37,12 +48,12 @@ public class Photo {
         this.id = id;
     }
 
-    public String getPhotoName() {
-        return photoName;
+    public String getCameraName() {
+        return cameraName;
     }
 
-    public void setPhotoName(String photoName) {
-        this.photoName = photoName;
+    public void setCameraName(String cameraName) {
+        this.cameraName = cameraName;
     }
 
     public Date getDate() {
@@ -53,14 +64,6 @@ public class Photo {
         this.date = date;
     }
 
-    public String getNormalResolutionPath() {
-        return normalResolutionPath;
-    }
-
-    public void setNormalResolutionPath(String normalResolutionPath) {
-        this.normalResolutionPath = normalResolutionPath;
-    }
-
     public String getMiniaturePath() {
         return miniaturePath;
     }
@@ -69,11 +72,53 @@ public class Photo {
         this.miniaturePath = miniaturePath;
     }
 
-    public String getCameraName() {
-        return cameraName;
+    public String getNormalResolutionPath() {
+        return normalResolutionPath;
     }
 
-    public void setCameraName(String cameraName) {
-        this.cameraName = cameraName;
+    public void setNormalResolutionPath(String normalResolutionPath) {
+        this.normalResolutionPath = normalResolutionPath;
     }
+
+    public String getPhotoName() {
+        return photoName;
+    }
+
+    public void setPhotoName(String photoName) {
+        this.photoName = photoName;
+    }
+
+    public AppUser getUserID() {
+        return userID;
+    }
+
+    public void setUserID(AppUser userID) {
+        this.userID = userID;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof Photo)) {
+            return false;
+        }
+        Photo other = (Photo) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "javaapplication1.Photo[ id=" + id + " ]";
+    }
+
 }

@@ -1,19 +1,26 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
+import com.polsl.multimedia.MultimediaProject.models.UserData;
+import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.jws.soap.SOAPBinding;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by Ryukki on 26.04.2018.
@@ -26,9 +33,18 @@ public class AppRestController {
     @Autowired
     private PhotoService photoService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @RequestMapping(value = "/registerUser", method = RequestMethod.POST)
-    public Long registerUser(@RequestParam String username, @RequestParam String password){
-        return userService.createUser(username, password).getId();
+    public ResponseEntity<UserData> registerUser(@RequestBody UserData userData){
+        userService.createUser(userData.getUsername(), userData.getPassword());
+        return new ResponseEntity<>(userData, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/users")
+    public List<AppUser> findAllUsers() {
+        return userRepository.findAll();
     }
 
     @RequestMapping(value = "/displayPhoto", produces = MediaType.IMAGE_JPEG_VALUE)
@@ -47,7 +63,7 @@ public class AppRestController {
     }
 
     @RequestMapping(value = "uploadPhoto", method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public Long uploadPhoto(@RequestParam MultipartFile photo, Authentication authentication){
+    public Long uploadPhoto(@RequestBody MultipartFile photo, Authentication authentication){
         AppUser appUser = userService.getUserWithUsername(authentication.getName());
         try {
             return photoService.addPhoto(appUser, photo);
