@@ -1,4 +1,4 @@
-package com.polsl.multimedia.MultimediaProject.models;
+package com.polsl.multimedia.MultimediaProject.DTO;
 
 public class UserData {
     String username;

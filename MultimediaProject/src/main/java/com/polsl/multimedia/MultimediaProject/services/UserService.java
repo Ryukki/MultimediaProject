@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,16 +50,18 @@ public class UserService {
         return appUser;
     }
 
-    public String getUsersPhotoPath(AppUser appUser, Long photoId){
+    public Photo getUsersPhoto(AppUser appUser, Long photoId){
         Photo photo = photoService.getPhotoWithId(photoId);
         if(photo!=null){
             List<Photo> photoList = appUser.getPhotos();
             if(photoList.contains(photo)){
-                return photo.getNormalResolutionPath();
+                return photo;
             }
         }
-        return "";
+        //TODO throw exception and handle it in controller
+        return photo;
     }
+
 
     public boolean checkLoginCredentials(String username, String password){
         AppUser appUser = getUserWithUsername(username);
@@ -70,5 +73,13 @@ public class UserService {
 
     public List<Photo> getAllPhotos(AppUser appUser){
         return appUser.getPhotos();
+    }
+
+    public List<Long> getPhotoIds(AppUser appUser){
+        List<Long> returnList = new ArrayList<>();
+        for(Photo photo: getAllPhotos(appUser)){
+            returnList.add(photo.getId());
+        }
+        return returnList;
     }
 }

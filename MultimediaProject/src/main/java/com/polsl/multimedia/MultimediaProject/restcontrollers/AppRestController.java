@@ -1,7 +1,8 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
-import com.polsl.multimedia.MultimediaProject.models.UserData;
+import com.polsl.multimedia.MultimediaProject.DTO.UserData;
+import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
@@ -12,14 +13,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.jws.soap.SOAPBinding;
+import javax.persistence.EntityExistsException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.List;
 
 /**
@@ -42,9 +43,22 @@ public class AppRestController {
         return new ResponseEntity<>(userData, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/users")
-    public List<AppUser> findAllUsers() {
-        return userRepository.findAll();
+    @RequestMapping(value = "/login")
+    public HttpStatus login(Authentication authentication){
+        AppUser appUser = userService.getUserWithUsername(authentication.getName());
+        if(appUser!=null){
+            return HttpStatus.OK;
+        }
+        return HttpStatus.NOT_FOUND;
+    }
+
+    @RequestMapping(value = "/allPhotos")
+    public ResponseEntity<List<Long>> allPhotos(Authentication authentication){
+        AppUser appUser = userService.getUserWithUsername(authentication.getName());
+        if(appUser!=null){
+            return ResponseEntity.ok(userService.getPhotoIds(appUser));
+        }
+        return ResponseEntity.unprocessableEntity().body(null);
     }
 
     @RequestMapping(value = "/displayPhoto", produces = MediaType.IMAGE_JPEG_VALUE)
@@ -52,7 +66,8 @@ public class AppRestController {
         AppUser appUser = userService.getUserWithUsername(authentication.getName());
         if(appUser!=null){
             try {
-                String photoPath = userService.getUsersPhotoPath(appUser, photoId);
+                Photo photo = userService.getUsersPhoto(appUser, photoId);
+                String photoPath = photo.getNormalResolutionPath();
                 InputStream in = FileUtils.openInputStream(new File(photoPath));
                 return IOUtils.toByteArray(in);
             } catch (IOException e) {
@@ -62,14 +77,36 @@ public class AppRestController {
         return null;
     }
 
+    @RequestMapping(value = "/miniature", produces = MediaType.IMAGE_JPEG_VALUE)
+    public @ResponseBody byte[] miniature(@RequestParam Long photoId, Authentication authentication){
+        AppUser appUser = userService.getUserWithUsername(authentication.getName());
+        if(appUser!=null){
+            try {
+                Photo photo = userService.getUsersPhoto(appUser, photoId);
+                String miniaturePath = photo.getMiniaturePath();
+                InputStream in = FileUtils.openInputStream(new File(miniaturePath));
+                return IOUtils.toByteArray(in);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     @RequestMapping(value = "uploadPhoto", method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public Long uploadPhoto(@RequestBody MultipartFile photo, Authentication authentication){
+    public ResponseEntity<Long> uploadPhoto(@RequestBody MultipartFile photo, Authentication authentication){
         AppUser appUser = userService.getUserWithUsername(authentication.getName());
         try {
-            return photoService.addPhoto(appUser, photo);
+            return ResponseEntity.ok(photoService.addPhoto(appUser, photo));
+        }catch (FileAlreadyExistsException e){
+            e.printStackTrace();
+            return ResponseEntity.unprocessableEntity().body(-2L);//file already exists
         } catch (IOException e) {
             e.printStackTrace();
-            return -3L;//IOException
+            return ResponseEntity.unprocessableEntity().body(-3L);//IOException
+        } catch (EntityExistsException e){
+            e.printStackTrace();
+            return ResponseEntity.unprocessableEntity().body(-1L);//photo with this path already in DB
         }
     }
 

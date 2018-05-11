@@ -10,7 +10,7 @@
         <module name="SIM" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8">
       <module name="MultimediaProject" target="1.8" />
       <module name="SIM" target="1.8" />
     </bytecodeTargetLevel>
