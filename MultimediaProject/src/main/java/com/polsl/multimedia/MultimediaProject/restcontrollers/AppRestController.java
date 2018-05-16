@@ -46,7 +46,7 @@ public class AppRestController {
             AppUser appUser = userService.getUserWithUsername(userData.getUsername());
             return userService.basic(appUser.getUsername(), appUser.getPassword());
         }
-        return "";
+        return "Wrong username of password";
     }
 
     @RequestMapping(value = "/allPhotos")

@@ -7,10 +7,8 @@ import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import sun.nio.cs.ISO_8859_2;
 
 import javax.annotation.PostConstruct;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
