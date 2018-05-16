@@ -7,8 +7,10 @@ import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sun.nio.cs.ISO_8859_2;
 
 import javax.annotation.PostConstruct;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,13 +64,25 @@ public class UserService {
         return photo;
     }
 
+    public boolean userHasPhoto(AppUser appUser, Photo photo){
+        List<Photo> photos = appUser.getPhotos();
+        if(photos.contains(photo)){
+            return true;
+        }else{
+            return false;
+        }
+    }
 
     public boolean checkLoginCredentials(String username, String password){
         AppUser appUser = getUserWithUsername(username);
-        if(appUser !=null && appUser.getPassword().equals(password)){
+        if(appUser !=null && passwordEncoder.matches(password, appUser.getPassword())){
             return true;
         }
         return false;
+    }
+
+    public static String basic(String username, String password){
+        return basic(username, password);
     }
 
     public List<Photo> getAllPhotos(AppUser appUser){

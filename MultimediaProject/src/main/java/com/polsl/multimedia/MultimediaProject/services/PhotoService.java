@@ -31,6 +31,9 @@ public class PhotoService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserService userService;
+
     public Photo getPhotoWithId(Long id){
         Optional<Photo> photo = photoRepository.findById(id);
         if(photo.isPresent()){
@@ -41,10 +44,12 @@ public class PhotoService {
 
     public Long addPhoto(AppUser appUser, MultipartFile multipartFile) throws IOException, EntityExistsException {
         Photo photo = new Photo();
+        String photoName = multipartFile.getOriginalFilename();
 
         String filePath = "resources/" + appUser.getId();
         new File(filePath).mkdirs();
-        filePath +=  "/" + multipartFile.getOriginalFilename();
+        String miniaturePath = filePath + "/miniature" + photoName;
+        filePath +=  "/" + photoName;
 
         Photo checkForExistingEntry = photoRepository.findByNormalResolutionPath(filePath);
         if(checkForExistingEntry!=null){
@@ -63,10 +68,9 @@ public class PhotoService {
         fos.write(multipartFile.getBytes());
         fos.close();
 
-        String miniaturePath = filePath + "/miniature" + multipartFile.getOriginalFilename();
         createMiniature(photoFile, miniaturePath);
 
-
+        photo.setPhotoName(photoName);
         photo.setNormalResolutionPath(filePath);
         photo.setMiniaturePath(miniaturePath);
         photo.setUserID(appUser);
@@ -78,14 +82,48 @@ public class PhotoService {
     }
 
     private void createMiniature(File photoFile, String path){
-        BufferedImage img = null; // load image
         try {
-            img = ImageIO.read(photoFile);
+            BufferedImage img = ImageIO.read(photoFile);
             BufferedImage scaledImg = Scalr.resize(img, 150);
             String extension = FilenameUtils.getExtension(path);
             ImageIO.write(scaledImg, extension, new File(path));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean updatePhoto(AppUser appUser, Long id, MultipartFile multipartFile){
+        Photo photo = getPhotoWithId(id);
+        if(photo!= null && userService.userHasPhoto(appUser, photo)){
+            try{
+                File photoFile = new File(photo.getNormalResolutionPath());
+                FileOutputStream fos = new FileOutputStream(photoFile, false);
+                fos.write(multipartFile.getBytes());
+                fos.close();
+                return true;
+            }catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public boolean deletePhoto(AppUser appUser, Long id){
+        Photo photo = getPhotoWithId(id);
+        if(photo!= null && userService.userHasPhoto(appUser, photo)){
+            try{
+                File photoFile = new File(photo.getNormalResolutionPath());
+                boolean temp = photoFile.delete();
+                photoFile = new File(photo.getMiniaturePath());
+                temp = photoFile.delete();
+                photoRepository.delete(photo);
+                return true;
+            }catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
     }
 }

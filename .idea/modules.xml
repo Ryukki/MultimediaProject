@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MultimediaProject.iml" filepath="$PROJECT_DIR$/.idea/MultimediaProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/MultimediaProject/SIM.iml" filepath="$PROJECT_DIR$/MultimediaProject/SIM.iml" />
     </modules>
   </component>

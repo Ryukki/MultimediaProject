@@ -1,7 +1,6 @@
 package com.polsl.multimedia.MultimediaProject.models;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -18,26 +17,37 @@ public class Photo implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Long id;
-    @Column(name = "camera_name")
-    private String cameraName;
-    @Column(name = "date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
+
     @Column(name = "miniature_path")
     private String miniaturePath;
+
     @Column(name = "normal_resolution_path")
     private String normalResolutionPath;
+
     @Column(name = "photo_name")
     private String photoName;
+
     @JoinColumn(name = "userID", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private AppUser userID;
 
-    public Photo() {
-    }
+    @Column(name = "date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date date;
 
-    public Photo(Long id) {
-        this.id = id;
+    @Column(name = "camera_name")
+    private String cameraName;
+
+    @Column(name = "exposure")
+    private String exposure;
+
+    @Column(name = "aperture")
+    private String maxAperture;
+
+    @Column(name = "focal_lenght")
+    private String focalLength;
+
+    public Photo() {
     }
 
     public Long getId() {
@@ -96,6 +106,34 @@ public class Photo implements Serializable {
         this.userID = userID;
     }
 
+    public String getExposure() {
+        return exposure;
+    }
+
+    public void setExposure(String exposure) {
+        this.exposure = exposure;
+    }
+
+    public String getMaxAperture() {
+        return maxAperture;
+    }
+
+    public void setMaxAperture(String maxAperture) {
+        this.maxAperture = maxAperture;
+    }
+
+    public String getFocalLength() {
+        return focalLength;
+    }
+
+    public void setFocalLength(String focalLength) {
+        this.focalLength = focalLength;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -110,10 +148,7 @@ public class Photo implements Serializable {
             return false;
         }
         Photo other = (Photo) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return !((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id)));
     }
 
     @Override

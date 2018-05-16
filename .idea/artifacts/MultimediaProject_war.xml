@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="MultimediaProject:war">
-    <output-path>$PROJECT_DIR$/MultimediaProject/target</output-path>
-    <root id="archive" name="SIM-1.war">
-      <element id="artifact" artifact-name="MultimediaProject:war exploded" />
-    </root>
-  </artifact>
-</component>

@@ -34,9 +34,6 @@ public class AppRestController {
     @Autowired
     private PhotoService photoService;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @RequestMapping(value = "/registerUser", method = RequestMethod.POST)
     public ResponseEntity<UserData> registerUser(@RequestBody UserData userData){
         userService.createUser(userData.getUsername(), userData.getPassword());
@@ -44,12 +41,12 @@ public class AppRestController {
     }
 
     @RequestMapping(value = "/login")
-    public HttpStatus login(Authentication authentication){
-        AppUser appUser = userService.getUserWithUsername(authentication.getName());
-        if(appUser!=null){
-            return HttpStatus.OK;
+    public String login(@RequestBody UserData userData){
+        if(userService.checkLoginCredentials(userData.getUsername(), userData.getPassword())){
+            AppUser appUser = userService.getUserWithUsername(userData.getUsername());
+            return userService.basic(appUser.getUsername(), appUser.getPassword());
         }
-        return HttpStatus.NOT_FOUND;
+        return "";
     }
 
     @RequestMapping(value = "/allPhotos")
@@ -111,9 +108,20 @@ public class AppRestController {
     }
 
     @RequestMapping(value = "updatePhoto", method = RequestMethod.POST, consumes = {"multipart/form-data"})
-    public Long updatePhoto(@RequestParam MultipartFile photo, Authentication authentication){
+    public HttpStatus updatePhoto(@RequestParam MultipartFile photo, @RequestParam Long photoId, Authentication authentication){
         AppUser appUser = userService.getUserWithUsername(authentication.getName());
-        //TODO
-        return 0L;
+        if(photoService.updatePhoto(appUser, photoId, photo)){
+            return HttpStatus.OK;
+        }
+        return HttpStatus.NOT_FOUND;
+    }
+
+    @RequestMapping(value = "deletePhoto")
+    public HttpStatus deletePhoto(@RequestParam Long photoId, Authentication authentication){
+        AppUser appUser = userService.getUserWithUsername(authentication.getName());
+        if(photoService.deletePhoto(appUser, photoId)){
+            return HttpStatus.OK;
+        }
+        return HttpStatus.NOT_FOUND;
     }
 }
