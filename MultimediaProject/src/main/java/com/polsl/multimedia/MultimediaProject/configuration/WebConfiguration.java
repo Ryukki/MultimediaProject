@@ -16,6 +16,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/registerUser").permitAll()
+                .antMatchers("/login").permitAll()
                 .anyRequest().fullyAuthenticated().and().
                 httpBasic().and().
                 csrf().disable();

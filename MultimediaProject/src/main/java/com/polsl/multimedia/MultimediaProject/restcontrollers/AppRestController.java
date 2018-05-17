@@ -1,5 +1,6 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
+import com.polsl.multimedia.MultimediaProject.DTO.LoginResponse;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.DTO.UserData;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
@@ -41,12 +42,15 @@ public class AppRestController {
     }
 
     @RequestMapping(value = "/login")
-    public String login(@RequestBody UserData userData){
+    public ResponseEntity<LoginResponse> login(@RequestBody UserData userData){
+        LoginResponse response = new LoginResponse();
         if(userService.checkLoginCredentials(userData.getUsername(), userData.getPassword())){
-            AppUser appUser = userService.getUserWithUsername(userData.getUsername());
-            return userService.basic(appUser.getUsername(), appUser.getPassword());
+            response.setAccessToken(userService.basic(userData.getUsername(), userData.getPassword()));
+            response.setMessage("OK");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        return "Wrong username of password";
+        response.setMessage("User not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping(value = "/allPhotos")

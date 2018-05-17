@@ -1,15 +1,22 @@
 package com.polsl.multimedia.MultimediaProject.services;
 
+import com.google.protobuf.ByteString;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
+import javafx.util.converter.ByteStringConverter;
+import org.apache.logging.log4j.util.Chars;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -79,8 +86,14 @@ public class UserService {
         return false;
     }
 
-    public static String basic(String username, String password){
-        return basic(username, password);
+    public String basic(String username, String password){
+        return basic(username, password, StandardCharsets.UTF_8);
+    }
+
+    private String basic(String username, String password, Charset charset) {
+        String usernameAndPassword = username + ":" + password;
+        String encoded = Base64.getEncoder().encodeToString((usernameAndPassword).getBytes(charset));
+        return "Basic " + encoded;
     }
 
     public List<Photo> getAllPhotos(AppUser appUser){
