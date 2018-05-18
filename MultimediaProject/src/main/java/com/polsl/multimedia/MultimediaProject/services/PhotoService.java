@@ -119,6 +119,7 @@ public class PhotoService {
         photo.setFocalLength(photoParams.getFocalLength());
         photo.setLongitude(photoParams.getLongitude());
         photo.setLatitude(photoParams.getLatitude());
+        photoRepository.save(photo);
     }
 
     public boolean deletePhoto(AppUser appUser, Long id){

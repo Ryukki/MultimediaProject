@@ -7,10 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="07a40176-2e47-4d8f-ab9f-7daf06708ce9" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/DTO/UploadExifBody.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/SIM_war_exploded.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/SIM_war_exploded.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/services/PhotoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/services/PhotoService.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/MultimediaProject/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -130,8 +127,8 @@
       <file leaf-file-name="PhotoService.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/services/PhotoService.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="201">
-              <caret line="112" column="16" selection-start-line="112" selection-start-column="16" selection-end-line="112" selection-end-column="16" />
+            <state relative-caret-position="354">
+              <caret line="121" column="36" lean-forward="true" selection-start-line="121" selection-start-column="36" selection-end-line="121" selection-end-column="36" />
             </state>
           </provider>
         </entry>
@@ -162,6 +159,7 @@
         <option value="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/DTO/PhotoParams.java" />
         <option value="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/restcontrollers/AppRestController.java" />
         <option value="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/DTO/UploadExifBody.java" />
+        <option value="$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/services/PhotoService.java" />
       </list>
     </option>
   </component>
@@ -549,12 +547,12 @@
       <workItem from="1526677604781" duration="24000" />
       <workItem from="1526677734914" duration="109000" />
       <workItem from="1526678109271" duration="124000" />
-      <workItem from="1526678283420" duration="5087000" />
+      <workItem from="1526678283420" duration="5369000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="17214000" />
+    <option name="totallyTimeSpent" value="17496000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1928" y="-8" width="1936" height="1066" extended-state="6" />
@@ -894,8 +892,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MultimediaProject/src/main/java/com/polsl/multimedia/MultimediaProject/services/PhotoService.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="201">
-          <caret line="112" column="16" selection-start-line="112" selection-start-column="16" selection-end-line="112" selection-end-column="16" />
+        <state relative-caret-position="354">
+          <caret line="121" column="36" lean-forward="true" selection-start-line="121" selection-start-column="36" selection-end-line="121" selection-end-column="36" />
         </state>
       </provider>
     </entry>
