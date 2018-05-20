@@ -63,6 +63,10 @@ public class UserService {
         return photo;
     }
 
+    public List<Photo> getUsersPhoto(AppUser appuser) {
+        return appuser.getPhotos();
+    }
+
     public boolean userHasPhoto(AppUser appUser, Photo photo){
         List<Photo> photos = appUser.getPhotos();
         if(photos.contains(photo)){

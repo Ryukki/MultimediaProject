@@ -1,14 +1,12 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
-import com.polsl.multimedia.MultimediaProject.DTO.LoginResponse;
-import com.polsl.multimedia.MultimediaProject.DTO.PhotoParams;
-import com.polsl.multimedia.MultimediaProject.DTO.UploadExifBody;
+import com.polsl.multimedia.MultimediaProject.DTO.*;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
-import com.polsl.multimedia.MultimediaProject.DTO.UserData;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,6 +61,30 @@ public class AppRestController {
             return ResponseEntity.ok(userService.getPhotoIds(appUser));
         }
         return ResponseEntity.unprocessableEntity().body(null);
+    }
+
+    @RequestMapping(value = "/photoLocations")
+    public ResponseEntity<List<PhotoLocation>> fetchPhotos(Authentication authentication) {
+        AppUser appUser = userService.getUserWithUsername(authentication.getName());
+        if (appUser!=null) {
+            List<PhotoLocation> photoLocations = new ArrayList<>();
+            List<Photo> photos = appUser.getPhotos();
+            photos.forEach(photo -> {
+                try {
+                    String miniaturePath = photo.getMiniaturePath();
+                    InputStream in = FileUtils.openInputStream(new File(miniaturePath));
+                    byte[] miniature = IOUtils.toByteArray(in);
+                    String miniatureString = java.util.Base64.getEncoder().encodeToString(miniature);
+                    PhotoLocation pl = new PhotoLocation(miniatureString, photo.getId(), photo.getLatitude(), photo.getLongitude());
+                    photoLocations.add(pl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return ResponseEntity.ok(photoLocations);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @RequestMapping(value = "/displayPhoto", produces = MediaType.IMAGE_JPEG_VALUE)
