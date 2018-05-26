@@ -12,12 +12,13 @@ public class PhotoParams {
     private String photoName;
     private Date date;
     private String cameraName;
-    private String exposure;
-    private String maxAperture;
-    private String focalLength;
+    private Double exposure;
+    private Double maxAperture;
+    private Double focalLength;
     private Double longitude;
     private Double latitude;
-
+    private String author;
+    private String description;
 
     public PhotoParams() {
     }
@@ -32,6 +33,8 @@ public class PhotoParams {
         focalLength = photo.getFocalLength();
         longitude = photo.getLongitude();
         latitude = photo.getLatitude();
+        author = photo.getAuthor();
+        description = photo.getDescription();
     }
 
     public Long getId() {
@@ -66,27 +69,27 @@ public class PhotoParams {
         this.cameraName = cameraName;
     }
 
-    public String getExposure() {
+    public Double getExposure() {
         return exposure;
     }
 
-    public void setExposure(String exposure) {
+    public void setExposure(Double exposure) {
         this.exposure = exposure;
     }
 
-    public String getMaxAperture() {
+    public Double getMaxAperture() {
         return maxAperture;
     }
 
-    public void setMaxAperture(String maxAperture) {
+    public void setMaxAperture(Double maxAperture) {
         this.maxAperture = maxAperture;
     }
 
-    public String getFocalLength() {
+    public Double getFocalLength() {
         return focalLength;
     }
 
-    public void setFocalLength(String focalLength) {
+    public void setFocalLength(Double focalLength) {
         this.focalLength = focalLength;
     }
 
@@ -104,5 +107,21 @@ public class PhotoParams {
 
     public void setLatitude(Double latitude) {
         this.latitude = latitude;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

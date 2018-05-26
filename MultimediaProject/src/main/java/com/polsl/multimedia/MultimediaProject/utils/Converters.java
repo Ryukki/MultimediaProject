@@ -1,4 +1,4 @@
-package com.polsl.multimedia.MultimediaProject.helpers;
+package com.polsl.multimedia.MultimediaProject.utils;
 
 public class Converters {
 

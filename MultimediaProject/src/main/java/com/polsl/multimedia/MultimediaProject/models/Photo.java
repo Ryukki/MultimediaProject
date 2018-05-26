@@ -27,6 +27,12 @@ public class Photo implements Serializable {
     @Column(name = "photo_name")
     private String photoName;
 
+    @Column(name = "author")
+    private String author;
+
+    @Column(name = "description")
+    private String description;
+
     @JoinColumn(name = "userID", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private AppUser userID;
@@ -39,13 +45,13 @@ public class Photo implements Serializable {
     private String cameraName;
 
     @Column(name = "exposure")
-    private String exposure;
+    private Double exposure;
 
     @Column(name = "aperture")
-    private String maxAperture;
+    private Double maxAperture;
 
     @Column(name = "focal_length")
-    private String focalLength;
+    private Double focalLength;
 
     @Column(name ="longitude")
     private Double longitude;
@@ -112,27 +118,27 @@ public class Photo implements Serializable {
         this.userID = userID;
     }
 
-    public String getExposure() {
+    public Double getExposure() {
         return exposure;
     }
 
-    public void setExposure(String exposure) {
+    public void setExposure(Double exposure) {
         this.exposure = exposure;
     }
 
-    public String getMaxAperture() {
+    public Double getMaxAperture() {
         return maxAperture;
     }
 
-    public void setMaxAperture(String maxAperture) {
+    public void setMaxAperture(Double maxAperture) {
         this.maxAperture = maxAperture;
     }
 
-    public String getFocalLength() {
+    public Double getFocalLength() {
         return focalLength;
     }
 
-    public void setFocalLength(String focalLength) {
+    public void setFocalLength(Double focalLength) {
         this.focalLength = focalLength;
     }
 
@@ -150,6 +156,22 @@ public class Photo implements Serializable {
 
     public void setLatitude(Double latitude) {
         this.latitude = latitude;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public static long getSerialVersionUID() {

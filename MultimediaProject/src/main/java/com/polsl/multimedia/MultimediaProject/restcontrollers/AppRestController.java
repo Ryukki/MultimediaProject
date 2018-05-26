@@ -1,5 +1,6 @@
 package com.polsl.multimedia.MultimediaProject.restcontrollers;
 
+import com.drew.imaging.ImageProcessingException;
 import com.polsl.multimedia.MultimediaProject.DTO.*;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
@@ -17,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityExistsException;
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,12 @@ public class AppRestController {
 
     @Autowired
     private PhotoService photoService;
+
+    @RequestMapping(value = "/test")
+    public String test(){
+        photoService.createTestPhotos();
+        return "testEntered";
+    }
 
     @RequestMapping(value = "/registerUser", method = RequestMethod.POST)
     public ResponseEntity<UserData> registerUser(@RequestBody UserData userData){
@@ -144,6 +152,9 @@ public class AppRestController {
         } catch (EntityExistsException e){
             e.printStackTrace();
             return ResponseEntity.unprocessableEntity().body(-1L);//photo with this path already in DB
+        } catch (ImageProcessingException e) {
+            e.printStackTrace();
+            return ResponseEntity.unprocessableEntity().body(-4L);//error reading exif
         }
     }
 

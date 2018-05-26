@@ -1,16 +1,11 @@
 package com.polsl.multimedia.MultimediaProject.services;
 
-import com.google.protobuf.ByteString;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
-import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
-import javafx.util.converter.ByteStringConverter;
-import org.apache.logging.log4j.util.Chars;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
@@ -29,13 +24,16 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private PhotoRepository photoRepository;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private PhotoService photoService;
+
+    @PostConstruct
+    private void createDummyUser(){
+        AppUser dummyAppUser = new AppUser("user", passwordEncoder.encode("user"));
+        userRepository.save(dummyAppUser);
+    }
 
     public AppUser createUser(String username, String password){
         AppUser appUser = new AppUser(username, passwordEncoder.encode(password));
