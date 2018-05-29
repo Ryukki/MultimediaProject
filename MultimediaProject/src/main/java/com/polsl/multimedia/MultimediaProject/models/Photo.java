@@ -45,13 +45,13 @@ public class Photo implements Serializable {
     private String cameraName;
 
     @Column(name = "exposure")
-    private Double exposure;
+    private String exposure;
 
     @Column(name = "aperture")
-    private Double maxAperture;
+    private String maxAperture;
 
     @Column(name = "focal_length")
-    private Double focalLength;
+    private String focalLength;
 
     @Column(name ="longitude")
     private Double longitude;
@@ -118,27 +118,27 @@ public class Photo implements Serializable {
         this.userID = userID;
     }
 
-    public Double getExposure() {
+    public String getExposure() {
         return exposure;
     }
 
-    public void setExposure(Double exposure) {
+    public void setExposure(String exposure) {
         this.exposure = exposure;
     }
 
-    public Double getMaxAperture() {
+    public String getMaxAperture() {
         return maxAperture;
     }
 
-    public void setMaxAperture(Double maxAperture) {
+    public void setMaxAperture(String maxAperture) {
         this.maxAperture = maxAperture;
     }
 
-    public Double getFocalLength() {
+    public String getFocalLength() {
         return focalLength;
     }
 
-    public void setFocalLength(Double focalLength) {
+    public void setFocalLength(String focalLength) {
         this.focalLength = focalLength;
     }
 

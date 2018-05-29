@@ -2,9 +2,11 @@ package com.polsl.multimedia.MultimediaProject.services;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.lang.GeoLocation;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
+import com.drew.metadata.exif.GpsDirectory;
 import com.polsl.multimedia.MultimediaProject.DTO.PhotoParams;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
@@ -23,10 +25,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import org.imgscalr.*;
 
 /**
@@ -57,7 +60,7 @@ public class PhotoService {
         photo.setAuthor("user");
         photo.setCameraName("phone");
         photo.setLatitude(10.9);
-        photo.setExposure(11D);
+        photo.setExposure("11D");
         photo.setPhotoName("photo");
         photo = photoRepository.save(photo);
         dummyAppUser.getPhotos().add(photo);
@@ -67,7 +70,7 @@ public class PhotoService {
         photo.setAuthor("user");
         photo.setCameraName("camera");
         photo.setLatitude(12.9);
-        photo.setExposure(11D);
+        photo.setExposure("11D");
         photo.setPhotoName("photo");
         photo = photoRepository.save(photo);
         dummyAppUser.getPhotos().add(photo);
@@ -77,7 +80,7 @@ public class PhotoService {
         photo.setAuthor("another");
         photo.setCameraName("camera");
         photo.setLatitude(12.9);
-        photo.setExposure(1D);
+        photo.setExposure("1D");
         photo.setPhotoName("photo");
         photo = photoRepository.save(photo);
         dummyAppUser.getPhotos().add(photo);
@@ -122,11 +125,7 @@ public class PhotoService {
 
 
         Metadata metadata = ImageMetadataReader.readMetadata(photoFile);
-        for (Directory directory : metadata.getDirectories()) {
-            for (Tag tag : directory.getTags()) {
-                System.out.println(tag);
-            }
-        }
+        photo = readExIf(photo, metadata);
 
         createMiniature(photoFile, miniaturePath);
 
@@ -140,6 +139,64 @@ public class PhotoService {
         userRepository.save(appUser);
 
         return photo.getId();
+    }
+
+    private Photo readExIf(Photo photo, Metadata metadata){
+        for (Directory directory : metadata.getDirectories()) {
+            if(directory.getName().equals("Exif SubIFD")){
+                for (Tag tag : directory.getTags()) {
+                    try{
+                        System.out.println(tag.getTagName());
+                        switch (tag.getTagName()){
+                            case "Image Description":
+                                photo.setDescription(tag.getDescription());
+                                break;
+                            case "Date/Time Original":
+                                String exifDate = tag.getDescription();
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
+                                photo.setDate(dateFormat.parse(exifDate));
+                                break;
+                            case "Make":
+                            case "Model":
+                                String cameraName = "";
+                                cameraName += directory.getString(0x10f) + " ";
+                                cameraName += directory.getString(0x110);
+                                photo.setCameraName(cameraName);
+                                break;
+                            case "Artist":
+                                photo.setAuthor(tag.getDescription());
+                                break;
+                            case "GPS":
+                                Collection<GpsDirectory> gpsDirectories = metadata.getDirectoriesOfType(GpsDirectory.class);
+                                for (GpsDirectory gpsDirectory : gpsDirectories) {
+                                    // Try to read out the location, making sure it's non-zero
+                                    GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+                                    if (geoLocation != null && !geoLocation.isZero()) {
+                                        photo.setLatitude(geoLocation.getLatitude());
+                                        photo.setLongitude(geoLocation.getLongitude());
+                                        break;
+                                    }
+                                }
+                                break;
+                            case "Exposure Time":
+                                photo.setExposure(tag.getDescription());
+                                break;
+                            case "Focal Length":
+                                photo.setFocalLength(tag.getDescription());
+                                break;
+                            case "Max Aperture Value":
+                                photo.setMaxAperture(tag.getDescription());
+                                break;
+                            default:
+                                break;
+                        }
+                    }catch (ParseException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return photo;
     }
 
     private void createMiniature(File photoFile, String path){
@@ -232,13 +289,13 @@ public class PhotoService {
                 list.removeIf(p -> !p.getCameraName().equals(rule.getValue()));
                 return list;
             case "exposure":
-                list.removeIf(p -> !p.getExposure().equals(Double.parseDouble(rule.getValue())));
+                list.removeIf(p -> !p.getExposure().equals(rule.getValue()));
                 return list;
             case "aperture":
-                list.removeIf(p -> !p.getMaxAperture().equals(Double.parseDouble(rule.getValue())));
+                list.removeIf(p -> !p.getMaxAperture().equals(rule.getValue()));
                 return list;
             case "focalLength":
-                list.removeIf(p -> !p.getFocalLength().equals(Double.parseDouble(rule.getValue())));
+                list.removeIf(p -> !p.getFocalLength().equals(rule.getValue()));
                 return list;
             case "longitude":
                 list.removeIf(p -> !p.getLongitude().equals(Double.parseDouble(rule.getValue())));

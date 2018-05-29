@@ -12,9 +12,9 @@ public class PhotoParams {
     private String photoName;
     private Date date;
     private String cameraName;
-    private Double exposure;
-    private Double maxAperture;
-    private Double focalLength;
+    private String exposure;
+    private String maxAperture;
+    private String focalLength;
     private Double longitude;
     private Double latitude;
     private String author;
@@ -69,27 +69,27 @@ public class PhotoParams {
         this.cameraName = cameraName;
     }
 
-    public Double getExposure() {
+    public String getExposure() {
         return exposure;
     }
 
-    public void setExposure(Double exposure) {
+    public void setExposure(String exposure) {
         this.exposure = exposure;
     }
 
-    public Double getMaxAperture() {
+    public String getMaxAperture() {
         return maxAperture;
     }
 
-    public void setMaxAperture(Double maxAperture) {
+    public void setMaxAperture(String maxAperture) {
         this.maxAperture = maxAperture;
     }
 
-    public Double getFocalLength() {
+    public String getFocalLength() {
         return focalLength;
     }
 
-    public void setFocalLength(Double focalLength) {
+    public void setFocalLength(String focalLength) {
         this.focalLength = focalLength;
     }
 
