@@ -7,6 +7,7 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import com.drew.metadata.exif.GpsDirectory;
+import com.polsl.multimedia.MultimediaProject.DTO.FilterParams;
 import com.polsl.multimedia.MultimediaProject.DTO.PhotoParams;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
@@ -17,6 +18,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -29,6 +31,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.imgscalr.*;
 
@@ -259,52 +262,95 @@ public class PhotoService {
         return false;
     }
 
-    public List<Long> filterPhotos(AppUser appUser, Map<String, String> rules){
+    public List<Long> filterPhotos(AppUser appUser, FilterParams rules){
         List<Long> idList = new ArrayList<>();
         List<Photo> photoList;
-        String sort = rules.get("sort");
-        if(sort!=null && sort.equals("Asc")){
+        List<Photo> filteredList = new ArrayList<>();
+        if(rules.getSortAsc()){
             photoList = photoRepository.findAllByUserIDOrderByDateAsc(appUser);
         }else{
             photoList = photoRepository.findAllByUserIDOrderByDateDesc(appUser);
         }
 
-        for(Map.Entry<String, String> rule: rules.entrySet()){
-            if(!photoList.isEmpty()){
-                photoList = filterList(rule, photoList);
-            }
-        }
-        for(Photo photo: photoList){
+        filteredList = filterList(rules, photoList);
+        for(Photo photo: filteredList){
             idList.add(photo.getId());
         }
         return idList;
     }
 
-    private List<Photo> filterList(Map.Entry<String, String> rule, List<Photo> list){
-        switch (rule.getKey()){
-            case "author":
-                list.removeIf(p -> !p.getAuthor().equals(rule.getValue()));
-                return list;
-            case "cameraName":
-                list.removeIf(p -> !p.getCameraName().equals(rule.getValue()));
-                return list;
-            case "exposure":
-                list.removeIf(p -> !p.getExposure().equals(rule.getValue()));
-                return list;
-            case "aperture":
-                list.removeIf(p -> !p.getMaxAperture().equals(rule.getValue()));
-                return list;
-            case "focalLength":
-                list.removeIf(p -> !p.getFocalLength().equals(rule.getValue()));
-                return list;
-            case "longitude":
-                list.removeIf(p -> !p.getLongitude().equals(Double.parseDouble(rule.getValue())));
-                return list;
-            case "latitude":
-                list.removeIf(p -> !p.getLatitude().equals(Double.parseDouble(rule.getKey())));
-                return list;
-            default:
-                return list;
+    private List<Photo> filterList(FilterParams rules, List<Photo> list){
+        List<Photo> returnList = new ArrayList<>();
+
+        if(rules.getAuthors()!=null){
+            for(String author: rules.getAuthors()){
+                returnList.addAll(list.stream().filter(p -> p.getAuthor().equals(author)).collect(Collectors.toList()));
+            }
         }
+        if(rules.getCameraNames()!=null){
+            for(String cameraName: rules.getAuthors()){
+                returnList.addAll(list.stream().filter(p -> p.getCameraName().equals(cameraName)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getPhotoNames()!=null){
+            for(String photoName: rules.getPhotoNames()){
+                returnList.addAll(list.stream().filter(p -> p.getPhotoName().equals(photoName)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getExposureList()!=null){
+            for(String exposure: rules.getExposureList()){
+                returnList.addAll(list.stream().filter(p -> p.getExposure().equals(exposure)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getMaxApertureList()!=null){
+            for(String aperture: rules.getMaxApertureList()){
+                returnList.addAll(list.stream().filter(p -> p.getMaxAperture().equals(aperture)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getFocalLengthList()!=null){
+            for(String focalLength: rules.getFocalLengthList()){
+                returnList.addAll(list.stream().filter(p -> p.getFocalLength().equals(focalLength)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getLongitudeList()!=null){
+            for(Double longitude: rules.getLongitudeList()){
+                returnList.addAll(list.stream().filter(p -> p.getLongitude().equals(longitude)).collect(Collectors.toList()));
+            }
+        }
+        if(rules.getLatitudeList()!=null){
+            for(Double latitude: rules.getLatitudeList()){
+                returnList.addAll(list.stream().filter(p -> p.getLatitude().equals(latitude)).collect(Collectors.toList()));
+            }
+        }
+        /*
+        A było takie ładne: :(
+        for(String value: rule.getValue()){
+            switch (rule.getKey()){
+                case "author":
+                    returnList.addAll(list.stream().filter(p -> p.getAuthor().equals(value)).collect(Collectors.toList()));
+                    break;
+                case "cameraName":
+                    returnList.addAll(list.stream().filter(p -> p.getCameraName().equals(value)).collect(Collectors.toList()));
+                    break;
+                case "exposure":
+                    returnList.addAll(list.stream().filter(p -> p.getExposure().equals(value)).collect(Collectors.toList()));
+                    break;
+                case "aperture":
+                    returnList.addAll(list.stream().filter(p -> p.getMaxAperture().equals(value)).collect(Collectors.toList()));
+                    break;
+                case "focalLength":
+                    returnList.addAll(list.stream().filter(p -> p.getFocalLength().equals(value)).collect(Collectors.toList()));
+                    break;
+                case "longitude":
+                    returnList.addAll(list.stream().filter(p -> p.getLongitude().equals(Double.parseDouble(value))).collect(Collectors.toList()));
+                    break;
+                case "latitude":
+                    returnList.addAll(list.stream().filter(p -> p.getLatitude().equals(Double.parseDouble(value))).collect(Collectors.toList()));
+                    break;
+                default:
+                    break;
+            }
+        }*/
+        return returnList;
     }
 }
