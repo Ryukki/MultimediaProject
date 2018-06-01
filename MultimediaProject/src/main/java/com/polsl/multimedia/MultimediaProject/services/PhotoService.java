@@ -266,7 +266,7 @@ public class PhotoService {
         List<Long> idList = new ArrayList<>();
         List<Photo> photoList;
         List<Photo> filteredList = new ArrayList<>();
-        if(rules.getSortAsc()){
+        if(rules.getSortAsc()== null || rules.getSortAsc()){
             photoList = photoRepository.findAllByUserIDOrderByDateAsc(appUser);
         }else{
             photoList = photoRepository.findAllByUserIDOrderByDateDesc(appUser);
@@ -288,7 +288,7 @@ public class PhotoService {
             }
         }
         if(rules.getCameraNames()!=null){
-            for(String cameraName: rules.getAuthors()){
+            for(String cameraName: rules.getCameraNames()){
                 returnList.addAll(list.stream().filter(p -> p.getCameraName().equals(cameraName)).collect(Collectors.toList()));
             }
         }
