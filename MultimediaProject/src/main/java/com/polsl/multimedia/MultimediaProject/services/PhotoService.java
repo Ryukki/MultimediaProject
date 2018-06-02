@@ -18,7 +18,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -265,11 +264,18 @@ public class PhotoService {
     public List<Long> filterPhotos(AppUser appUser, FilterParams rules){
         List<Long> idList = new ArrayList<>();
         List<Photo> photoList;
-        List<Photo> filteredList = new ArrayList<>();
+        List<Photo> filteredList;
         if(rules.getSortAsc()== null || rules.getSortAsc()){
             photoList = photoRepository.findAllByUserIDOrderByDateAsc(appUser);
         }else{
             photoList = photoRepository.findAllByUserIDOrderByDateDesc(appUser);
+        }
+
+        if(checkIfEmptyFilterRules(rules)){
+            for(Photo photo: photoList){
+                idList.add(photo.getId());
+            }
+            return idList;
         }
 
         filteredList = filterList(rules, photoList);
@@ -279,48 +285,32 @@ public class PhotoService {
         return idList;
     }
 
-    private List<Photo> filterList(FilterParams rules, List<Photo> list){
-        List<Photo> returnList = new ArrayList<>();
+    private List<Photo> filterList(FilterParams rules, List<Photo> inputPhotoList){
+        List<Photo> returnList = inputPhotoList;
 
-        if(rules.getAuthors()!=null){
-            for(String author: rules.getAuthors()){
-                returnList.addAll(list.stream().filter(p -> p.getAuthor().equals(author)).collect(Collectors.toList()));
-            }
+        if(rules.getAuthors()!=null && !rules.getAuthors().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getAuthors().contains(p.getAuthor())).collect(Collectors.toList()));
         }
-        if(rules.getCameraNames()!=null){
-            for(String cameraName: rules.getCameraNames()){
-                returnList.addAll(list.stream().filter(p -> p.getCameraName().equals(cameraName)).collect(Collectors.toList()));
-            }
+        if(rules.getCameraNames()!=null && !rules.getCameraNames().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getCameraNames().contains(p.getCameraName())).collect(Collectors.toList()));
         }
-        if(rules.getPhotoNames()!=null){
-            for(String photoName: rules.getPhotoNames()){
-                returnList.addAll(list.stream().filter(p -> p.getPhotoName().equals(photoName)).collect(Collectors.toList()));
-            }
+        if(rules.getPhotoNames()!=null && !rules.getPhotoNames().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getPhotoNames().contains(p.getPhotoName())).collect(Collectors.toList()));
         }
-        if(rules.getExposureList()!=null){
-            for(String exposure: rules.getExposureList()){
-                returnList.addAll(list.stream().filter(p -> p.getExposure().equals(exposure)).collect(Collectors.toList()));
-            }
+        if(rules.getExposureList()!=null && !rules.getExposureList().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getExposureList().contains(p.getExposure())).collect(Collectors.toList()));
         }
-        if(rules.getMaxApertureList()!=null){
-            for(String aperture: rules.getMaxApertureList()){
-                returnList.addAll(list.stream().filter(p -> p.getMaxAperture().equals(aperture)).collect(Collectors.toList()));
-            }
+        if(rules.getMaxApertureList()!=null && !rules.getMaxApertureList().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getMaxApertureList().contains(p.getMaxAperture())).collect(Collectors.toList()));
         }
-        if(rules.getFocalLengthList()!=null){
-            for(String focalLength: rules.getFocalLengthList()){
-                returnList.addAll(list.stream().filter(p -> p.getFocalLength().equals(focalLength)).collect(Collectors.toList()));
-            }
+        if(rules.getFocalLengthList()!=null && !rules.getFocalLengthList().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getFocalLengthList().contains(p.getFocalLength())).collect(Collectors.toList()));
         }
-        if(rules.getLongitudeList()!=null){
-            for(Double longitude: rules.getLongitudeList()){
-                returnList.addAll(list.stream().filter(p -> p.getLongitude().equals(longitude)).collect(Collectors.toList()));
-            }
+        if(rules.getLongitudeList()!=null && !rules.getLongitudeList().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getLongitudeList().contains(p.getLongitude())).collect(Collectors.toList()));
         }
-        if(rules.getLatitudeList()!=null){
-            for(Double latitude: rules.getLatitudeList()){
-                returnList.addAll(list.stream().filter(p -> p.getLatitude().equals(latitude)).collect(Collectors.toList()));
-            }
+        if(rules.getLatitudeList()!=null && !rules.getLatitudeList().isEmpty()){
+            returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getLatitudeList().contains(p.getLatitude())).collect(Collectors.toList()));
         }
         /*
         A było takie ładne: :(
@@ -352,5 +342,34 @@ public class PhotoService {
             }
         }*/
         return returnList;
+    }
+
+    private boolean checkIfEmptyFilterRules(FilterParams rules){
+        if(rules.getAuthors()!=null && !rules.getAuthors().isEmpty()){
+            return false;
+        }
+        if(rules.getCameraNames()!=null && !rules.getCameraNames().isEmpty()){
+            return false;
+        }
+        if(rules.getPhotoNames()!=null && !rules.getPhotoNames().isEmpty()){
+            return false;
+        }
+        if(rules.getFocalLengthList()!=null && !rules.getFocalLengthList().isEmpty()){
+            return false;
+        }
+        if(rules.getExposureList()!=null && !rules.getExposureList().isEmpty()){
+            return false;
+        }
+        if(rules.getMaxApertureList()!=null && !rules.getMaxApertureList().isEmpty()){
+            return false;
+        }
+        if(rules.getLongitudeList()!=null && !rules.getLongitudeList().isEmpty()){
+            return false;
+        }
+        if(rules.getLatitudeList()!=null && !rules.getLatitudeList().isEmpty()){
+            return false;
+        }
+
+        return true;
     }
 }
