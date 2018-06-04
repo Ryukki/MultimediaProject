@@ -29,6 +29,7 @@ public class UserService {
     @Autowired
     private PhotoService photoService;
 
+    //TODO remove
     @PostConstruct
     private void createDummyUser(){
         AppUser dummyAppUser = new AppUser("user", passwordEncoder.encode("user"));

@@ -7,14 +7,26 @@ import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import com.drew.metadata.exif.GpsDirectory;
+import com.icafe4j.image.meta.MetadataType;
+import com.icafe4j.image.meta.exif.Exif;
+import com.icafe4j.image.meta.exif.ExifTag;
+import com.icafe4j.image.tiff.FieldType;
+import com.icafe4j.image.tiff.TiffTag;
 import com.polsl.multimedia.MultimediaProject.DTO.FilterParams;
 import com.polsl.multimedia.MultimediaProject.DTO.PhotoParams;
 import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,9 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import javax.persistence.EntityExistsException;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,6 +43,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.imgscalr.*;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.common.RationalNumber;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import com.icafe4j.image.meta.tiff.TiffExif;
 
 /**
  * Created by Ryukki on 20.04.2018.
@@ -49,6 +65,7 @@ public class PhotoService {
     @Autowired
     private UserService userService;
 
+    //TODO remove
     //for test on local machine only
     /*#######################################################################################################*/
     @Autowired
@@ -140,7 +157,37 @@ public class PhotoService {
         appUser.getPhotos().add(photo);
         userRepository.save(appUser);
 
+        //test(photo.getNormalResolutionPath());
+
+        FileInputStream fin = new FileInputStream(photoFile);
+        FileOutputStream fout = new FileOutputStream("resources/test.jpg");
+        Exif exif = new TiffExif();
+        exif.addExifField(ExifTag.MAX_APERTURE_VALUE, FieldType.RATIONAL, new int[] {10, 600});
+        exif.addExifField(ExifTag.EXPOSURE_TIME, FieldType.RATIONAL, new int[] {10, 600});
+        com.icafe4j.image.meta.Metadata.insertExif(fin, fout, exif, true);
+        fin.close();
+        fout.close();
+
         return photo.getId();
+    }
+
+    private  void test(String path){
+        Map<MetadataType, com.icafe4j.image.meta.Metadata> metadataMap = null;
+        try {
+            metadataMap = com.icafe4j.image.meta.Metadata.readMetadata(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Start of metadata information:");
+        System.out.println("Total number of metadata entries: " + metadataMap.size());
+        int i = 0;
+        for(Map.Entry<MetadataType, com.icafe4j.image.meta.Metadata> entry : metadataMap.entrySet()) {
+            System.out.println("Metadata entry " + i + " - " + entry.getKey());
+            entry.getValue().showMetadata();
+            i++;
+            System.out.println("-----------------------------------------");
+        }
+        System.out.println("End of metadata information.");
     }
 
     private Photo readExIf(Photo photo, Metadata metadata){
@@ -148,7 +195,6 @@ public class PhotoService {
             if(directory.getName().equals("Exif SubIFD")){
                 for (Tag tag : directory.getTags()) {
                     try{
-                        System.out.println(tag.getTagName());
                         switch (tag.getTagName()){
                             case "Image Description":
                                 photo.setDescription(tag.getDescription());
@@ -243,6 +289,106 @@ public class PhotoService {
         photoRepository.save(photo);
     }
 
+    public void changeExifMetadata(final File jpegImageFile, final File dst, Photo photo)
+            throws IOException, ImageReadException, ImageWriteException {
+        OutputStream os = null;
+        boolean canThrow = false;
+        try {
+            TiffOutputSet outputSet = null;
+
+            // note that metadata might be null if no metadata is found.
+            final ImageMetadata metadata = Imaging.getMetadata(jpegImageFile);
+            final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+            if (null != jpegMetadata) {
+                // note that exif might be null if no Exif metadata is found.
+                final TiffImageMetadata exif = jpegMetadata.getExif();
+
+                if (null != exif) {
+                    // TiffImageMetadata class is immutable (read-only).
+                    // TiffOutputSet class represents the Exif data to write.
+                    //
+                    // Usually, we want to update existing Exif metadata by
+                    // changing
+                    // the values of a few fields, or adding a field.
+                    // In these cases, it is easiest to use getOutputSet() to
+                    // start with a "copy" of the fields read from the image.
+                    outputSet = exif.getOutputSet();
+                }
+            }
+
+            // if file does not contain any exif metadata, we create an empty
+            // set of exif metadata. Otherwise, we keep all of the other
+            // existing tags.
+            if (null == outputSet) {
+                outputSet = new TiffOutputSet();
+            }
+
+            {
+                // Example of how to add a field/tag to the output set.
+                //
+                // Note that you should first remove the field/tag if it already
+                // exists in this directory, or you may end up with duplicate
+                // tags. See above.
+                //
+                // Certain fields/tags are expected in certain Exif directories;
+                // Others can occur in more than one directory (and often have a
+                // different meaning in different directories).
+                //
+                // TagInfo constants often contain a description of what
+                // directories are associated with a given tag.
+                //
+                final TiffOutputDirectory exifDirectory = outputSet
+                        .getOrCreateExifDirectory();
+                // make sure to remove old value if present (this method will
+                // not fail if the tag does not exist).
+                exifDirectory
+                        .removeField(ExifTagConstants.EXIF_TAG_APERTURE_VALUE);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_APERTURE_VALUE,
+                        new RationalNumber(3, 10));
+
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME, new RationalNumber(1,1));
+
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_MAX_APERTURE_VALUE);
+                //exifDirectory.add(ExifTagConstants.EXIF_TAG_MAX_APERTURE_VALUE, new RationalNumber());
+                //exifDirectory.add(ExifTagConstants.EXIF_TAG_MAX_APERTURE_VALUE, photo.getMaxAperture());
+
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH);
+                //exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, photo.getFocalLength());
+            }
+
+            {
+                // Example of how to add/update GPS info to output set.
+
+                // New York City
+                final double longitude = -74.0; // 74 degrees W (in Degrees East)
+                final double latitude = 40 + 43 / 60.0; // 40 degrees N (in Degrees
+                // North)
+
+                outputSet.setGPSInDegrees(longitude, latitude);
+            }
+
+
+
+            final TiffOutputDirectory exifDirectory = outputSet
+                    .getOrCreateRootDirectory();
+            exifDirectory
+                    .removeField(ExifTagConstants.EXIF_TAG_SOFTWARE);
+            exifDirectory.add(ExifTagConstants.EXIF_TAG_SOFTWARE,
+                    "SomeKind");
+
+            os = new FileOutputStream(dst);
+            os = new BufferedOutputStream(os);
+
+            new ExifRewriter().updateExifMetadataLossless(jpegImageFile, os,
+                    outputSet);
+
+            canThrow = true;
+        } finally {
+            IOUtils.closeQuietly(os);
+        }
+    }
+
     public boolean deletePhoto(AppUser appUser, Long id){
         Photo photo = getPhotoWithId(id);
         if(photo!= null && userService.userHasPhoto(appUser, photo)){
@@ -312,35 +458,6 @@ public class PhotoService {
         if(rules.getLatitudeList()!=null && !rules.getLatitudeList().isEmpty()){
             returnList.retainAll(inputPhotoList.stream().filter(p -> rules.getLatitudeList().contains(p.getLatitude())).collect(Collectors.toList()));
         }
-        /*
-        A było takie ładne: :(
-        for(String value: rule.getValue()){
-            switch (rule.getKey()){
-                case "author":
-                    returnList.addAll(list.stream().filter(p -> p.getAuthor().equals(value)).collect(Collectors.toList()));
-                    break;
-                case "cameraName":
-                    returnList.addAll(list.stream().filter(p -> p.getCameraName().equals(value)).collect(Collectors.toList()));
-                    break;
-                case "exposure":
-                    returnList.addAll(list.stream().filter(p -> p.getExposure().equals(value)).collect(Collectors.toList()));
-                    break;
-                case "aperture":
-                    returnList.addAll(list.stream().filter(p -> p.getMaxAperture().equals(value)).collect(Collectors.toList()));
-                    break;
-                case "focalLength":
-                    returnList.addAll(list.stream().filter(p -> p.getFocalLength().equals(value)).collect(Collectors.toList()));
-                    break;
-                case "longitude":
-                    returnList.addAll(list.stream().filter(p -> p.getLongitude().equals(Double.parseDouble(value))).collect(Collectors.toList()));
-                    break;
-                case "latitude":
-                    returnList.addAll(list.stream().filter(p -> p.getLatitude().equals(Double.parseDouble(value))).collect(Collectors.toList()));
-                    break;
-                default:
-                    break;
-            }
-        }*/
         return returnList;
     }
 

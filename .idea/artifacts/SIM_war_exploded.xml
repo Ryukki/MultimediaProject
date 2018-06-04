@@ -40,7 +40,6 @@
           <element id="library" level="project" name="Maven: org.springframework:spring-context:5.0.6.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-tx:5.0.6.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-beans:5.0.6.RELEASE" />
-          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.25" />
           <element id="library" level="project" name="Maven: org.springframework:spring-aspects:5.0.6.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework.boot:spring-boot-starter-data-rest:2.0.2.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework.boot:spring-boot-starter-json:2.0.2.RELEASE" />
@@ -77,6 +76,10 @@
           <element id="library" level="project" name="Maven: org.imgscalr:imgscalr-lib:4.2" />
           <element id="library" level="project" name="Maven: com.drewnoakes:metadata-extractor:2.11.0" />
           <element id="library" level="project" name="Maven: com.adobe.xmp:xmpcore:5.1.3" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/org/apache/commons/commons-imaging/1.0-SNAPSHOT/commons-imaging-1.0-20170517.221134-118.jar" output-file-name="commons-imaging-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/com/github/dragon66/icafe/1.1-SNAPSHOT/icafe-1.1-20171216.043736-99.jar" output-file-name="icafe-1.1-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: javax.media:jai_imageio:1.1" />
+          <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.25" />
         </element>
       </element>
       <element id="directory" name="META-INF">
