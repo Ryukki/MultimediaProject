@@ -49,48 +49,6 @@ public class PhotoService {
     @Autowired
     private UserService userService;
 
-    //for test on local machine only
-    /*#######################################################################################################*/
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    public void createTestPhotos(){
-        AppUser dummyAppUser = userService.getUserWithUsername("user");
-
-        Photo photo = new Photo();
-        photo.setUserID(dummyAppUser);
-        photo.setAuthor("user");
-        photo.setCameraName("phone");
-        photo.setLatitude(10.9);
-        photo.setExposure("11D");
-        photo.setPhotoName("photo");
-        photo = photoRepository.save(photo);
-        dummyAppUser.getPhotos().add(photo);
-
-        photo = new Photo();
-        photo.setUserID(dummyAppUser);
-        photo.setAuthor("user");
-        photo.setCameraName("camera");
-        photo.setLatitude(12.9);
-        photo.setExposure("11D");
-        photo.setPhotoName("photo");
-        photo = photoRepository.save(photo);
-        dummyAppUser.getPhotos().add(photo);
-
-        photo = new Photo();
-        photo.setUserID(dummyAppUser);
-        photo.setAuthor("another");
-        photo.setCameraName("camera");
-        photo.setLatitude(12.9);
-        photo.setExposure("1D");
-        photo.setPhotoName("photo");
-        photo = photoRepository.save(photo);
-        dummyAppUser.getPhotos().add(photo);
-
-        userRepository.save(dummyAppUser);
-    }
-    /*#######################################################################################################*/
-
     public Photo getPhotoWithId(Long id){
         Optional<Photo> photo = photoRepository.findById(id);
         if(photo.isPresent()){
@@ -148,7 +106,6 @@ public class PhotoService {
             if(directory.getName().equals("Exif SubIFD")){
                 for (Tag tag : directory.getTags()) {
                     try{
-                        System.out.println(tag.getTagName());
                         switch (tag.getTagName()){
                             case "Image Description":
                                 photo.setDescription(tag.getDescription());

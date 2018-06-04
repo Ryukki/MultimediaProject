@@ -29,12 +29,6 @@ public class UserService {
     @Autowired
     private PhotoService photoService;
 
-    @PostConstruct
-    private void createDummyUser(){
-        AppUser dummyAppUser = new AppUser("user", passwordEncoder.encode("user"));
-        userRepository.save(dummyAppUser);
-    }
-
     public AppUser createUser(String username, String password){
         AppUser appUser = new AppUser(username, passwordEncoder.encode(password));
         appUser = userRepository.save(appUser);
