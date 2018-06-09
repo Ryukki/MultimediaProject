@@ -103,7 +103,7 @@ public class PhotoService {
 
     private Photo readExIf(Photo photo, Metadata metadata){
         for (Directory directory : metadata.getDirectories()) {
-            if(directory.getName().equals("Exif SubIFD")){
+            if(directory.getName().equals("Exif SubIFD") || directory.getName().equals("Exif IFD0")){
                 for (Tag tag : directory.getTags()) {
                     try{
                         switch (tag.getTagName()){
@@ -115,12 +115,8 @@ public class PhotoService {
                                 DateFormat dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.ENGLISH);
                                 photo.setDate(dateFormat.parse(exifDate));
                                 break;
-                            case "Make":
                             case "Model":
-                                String cameraName = "";
-                                cameraName += directory.getString(0x10f) + " ";
-                                cameraName += directory.getString(0x110);
-                                photo.setCameraName(cameraName);
+                                photo.setCameraName(tag.getDescription());
                                 break;
                             case "Artist":
                                 photo.setAuthor(tag.getDescription());
