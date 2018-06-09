@@ -442,10 +442,6 @@ public class PhotoService {
         if(rules.getLongitudeList()!=null && !rules.getLongitudeList().isEmpty()){
             return false;
         }
-        if(rules.getLatitudeList()!=null && !rules.getLatitudeList().isEmpty()){
-            return false;
-        }
-
-        return true;
+        return rules.getLatitudeList() == null || rules.getLatitudeList().isEmpty();
     }
 }
