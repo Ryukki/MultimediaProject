@@ -5,6 +5,7 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.imaging.tiff.TiffMetadataReader;
 import com.drew.imaging.tiff.TiffReader;
 import com.drew.lang.GeoLocation;
+import com.drew.lang.Rational;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
@@ -222,34 +223,27 @@ public class PhotoService {
             }
             //aperture exif
             if (photo.getMaxAperture() != null && !photo.getMaxAperture().isEmpty()) {
-                String[] params = photo.getMaxAperture().split("/");
-                String[] numbers = params[1].split(",");
-                int divisor = 10 * numbers[1].length();
-                int numerator = Integer.parseInt(numbers[0] + numbers[1]);
+                double number = Double.parseDouble(photo.getMaxAperture());
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FNUMBER);
-                exifDirectory.add(ExifTagConstants.EXIF_TAG_FNUMBER, new RationalNumber(numerator, divisor));
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_FNUMBER, RationalNumber.valueOf(number));
             }
             if (photo.getExposure() != null && !photo.getExposure().isEmpty()) {
                 //exposure exif
-                String[] params = photo.getExposure().split(" ");
-                String[] numbers = params[0].split("/");
-                int divisor = Integer.parseInt(numbers[1]);
-                int numerator = Integer.parseInt(numbers[0]);
+                String[] params = photo.getExposure().split("/");
+                int divisor = Integer.parseInt(params[1]);
+                int numerator = Integer.parseInt(params[0]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME);
                 exifDirectory.add(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME, new RationalNumber(numerator, divisor));
             }
             if (photo.getFocalLength() != null && !photo.getFocalLength().isEmpty()) {
                 //focal length exif
-                String[] params = photo.getFocalLength().split(" ");
-                String[] numbers = params[0].split(",");
-                int divisor = 10 * numbers[1].length();
-                int numerator = Integer.parseInt(numbers[0] + numbers[1]);
+                double number = Double.parseDouble(photo.getFocalLength());
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH);
-                exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, new RationalNumber(numerator, divisor));
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, RationalNumber.valueOf(number));
             }
-
-            outputSet.setGPSInDegrees(photo.getLongitude(), photo.getLatitude());
-
+            if (photo.getLatitude()!=null && photo.getLongitude()!=null) {
+                outputSet.setGPSInDegrees(photo.getLongitude(), photo.getLatitude());
+            }
             os = new FileOutputStream(newPhoto);
             os = new BufferedOutputStream(os);
             new ExifRewriter().updateExifMetadataLossless(oldPhoto,os,outputSet);
@@ -260,6 +254,8 @@ public class PhotoService {
             os.close();
         }
     }
+
+
 
     private static void printTagValue(final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
         final TiffField field = jpegMetadata.findEXIFValueWithExactMatch(tagInfo);
