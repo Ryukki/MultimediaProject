@@ -16,6 +16,7 @@ import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
+import javafx.scene.image.Image;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
@@ -36,12 +37,14 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.persistence.EntityExistsException;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -152,7 +155,14 @@ public class PhotoService {
                                 }
                                 break;
                             case "Exposure Time":
-                                photo.setExposure(tag.getDescription());
+                                String number = tag.getDescription().split(" ")[0];
+                                try {
+                                    Rational rational = new Rational(Double.parseDouble(number));
+                                    photo.setExposure(rational.toString() + " sec");
+                                }
+                                catch(NumberFormatException e) {
+                                    photo.setExposure(tag.getDescription());
+                                }
                                 break;
                             case "Focal Length":
                                 description = tag.getDescription().replace(",",".");
@@ -443,4 +453,41 @@ public class PhotoService {
         }
         return rules.getLatitudeList() == null || rules.getLatitudeList().isEmpty();
     }
+
+    private class Rational {
+
+        private int num, denom;
+
+        public Rational(double d) {
+            String s = String.valueOf(d);
+            int digitsDec = s.length() - 1 - s.indexOf('.');
+            int denom = 1;
+            for (int i = 0; i < digitsDec; i++) {
+                d *= 10;
+                denom *= 10;
+            }
+
+            int num = (int) Math.round(d);
+            int g = gcd(num, denom);
+            this.num = num / g;
+            this.denom = denom /g;
+        }
+
+        public Rational(int num, int denom) {
+            this.num = num;
+            this.denom = denom;
+        }
+
+        public String toString() {
+            return String.valueOf(num) + "/" + String.valueOf(denom);
+        }
+
+        public int gcd(int num, int denom) {
+            BigInteger b1 = BigInteger.valueOf(num);
+            BigInteger b2 = BigInteger.valueOf(denom);
+            BigInteger gcd = b1.gcd(b2);
+            return gcd.intValue();
+        }
+    }
+
 }
