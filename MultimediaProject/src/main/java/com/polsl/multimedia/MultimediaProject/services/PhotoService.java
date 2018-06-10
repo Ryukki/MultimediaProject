@@ -105,7 +105,7 @@ public class PhotoService {
 
         Metadata metadata = ImageMetadataReader.readMetadata(photoFile);
         photo = readExIf(photo, metadata);
-
+        photo.setAuthor(appUser.getUsername());
         createMiniature(photoFile, miniaturePath);
 
 
@@ -121,6 +121,18 @@ public class PhotoService {
     }
 
     private Photo readExIf(Photo photo, Metadata metadata){
+
+        Collection<GpsDirectory> gpsDirectories = metadata.getDirectoriesOfType(GpsDirectory.class);
+        for (GpsDirectory gpsDirectory : gpsDirectories) {
+            // Try to read out the location, making sure it's non-zero
+            GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+            if (geoLocation != null && !geoLocation.isZero()) {
+                photo.setLatitude(geoLocation.getLatitude());
+                photo.setLongitude(geoLocation.getLongitude());
+                break;
+            }
+        }
+
         for (Directory directory : metadata.getDirectories()) {
             if(directory.getName().equals("Exif SubIFD") || directory.getName().equals("Exif IFD0")){
                 for (Tag tag : directory.getTags()) {
@@ -143,16 +155,7 @@ public class PhotoService {
                                 photo.setAuthor(tag.getDescription());
                                 break;
                             case "GPS":
-                                Collection<GpsDirectory> gpsDirectories = metadata.getDirectoriesOfType(GpsDirectory.class);
-                                for (GpsDirectory gpsDirectory : gpsDirectories) {
-                                    // Try to read out the location, making sure it's non-zero
-                                    GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-                                    if (geoLocation != null && !geoLocation.isZero()) {
-                                        photo.setLatitude(geoLocation.getLatitude());
-                                        photo.setLongitude(geoLocation.getLongitude());
-                                        break;
-                                    }
-                                }
+
                                 break;
                             case "Exposure Time":
                                 String number = tag.getDescription().split(" ")[0];
