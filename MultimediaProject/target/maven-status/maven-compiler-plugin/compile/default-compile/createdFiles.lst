@@ -1,0 +1,14 @@
+com\polsl\multimedia\MultimediaProject\DTO\UserData.class
+com\polsl\multimedia\MultimediaProject\MultimediaProjectApplication.class
+com\polsl\multimedia\MultimediaProject\configuration\SecurityConfiguration.class
+com\polsl\multimedia\MultimediaProject\models\AppUser.class
+com\polsl\multimedia\MultimediaProject\services\UserService.class
+com\polsl\multimedia\MultimediaProject\services\PhotoService.class
+com\polsl\multimedia\MultimediaProject\models\Photo.class
+com\polsl\multimedia\MultimediaProject\repositories\UserRepository.class
+com\polsl\multimedia\MultimediaProject\restcontrollers\AppRestController.class
+com\polsl\multimedia\MultimediaProject\configuration\SecurityConfiguration$1.class
+com\polsl\multimedia\MultimediaProject\repositories\PhotoRepository.class
+com\polsl\multimedia\MultimediaProject\DTO\LoginResponse.class
+com\polsl\multimedia\MultimediaProject\configuration\WebConfiguration.class
+com\polsl\multimedia\MultimediaProject\DTO\PhotoParams.class

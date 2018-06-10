@@ -38,12 +38,6 @@ public class AppRestController {
     @Autowired
     private PhotoService photoService;
 
-    @RequestMapping(value = "/test")
-    public String test(){
-        photoService.createTestPhotos();
-        return "testEntered";
-    }
-
     @RequestMapping(value = "/registerUser", method = RequestMethod.POST)
     public ResponseEntity<UserData> registerUser(@RequestBody UserData userData){
         userService.createUser(userData.getUsername(), userData.getPassword());
@@ -103,7 +97,9 @@ public class AppRestController {
                 Photo photo = userService.getUsersPhoto(appUser, photoId);
                 String photoPath = photo.getNormalResolutionPath();
                 InputStream in = FileUtils.openInputStream(new File(photoPath));
-                return IOUtils.toByteArray(in);
+                byte[] array = IOUtils.toByteArray(in);
+                in.close();
+                return array;
             } catch (IOException e) {
                 e.printStackTrace();
             }

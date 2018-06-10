@@ -1,0 +1,13 @@
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\models\Photo.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\repositories\UserRepository.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\DTO\PhotoParams.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\restcontrollers\AppRestController.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\MultimediaProjectApplication.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\configuration\SecurityConfiguration.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\DTO\LoginResponse.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\DTO\UserData.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\models\AppUser.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\repositories\PhotoRepository.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\services\PhotoService.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\services\UserService.java
+D:\SIIM\MultimediaProject\MultimediaProject\src\main\java\com\polsl\multimedia\MultimediaProject\configuration\WebConfiguration.java

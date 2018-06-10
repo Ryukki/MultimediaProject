@@ -17,7 +17,7 @@ public class MultimediaProjectApplication extends SpringBootServletInitializer {
 		return application.sources(MultimediaProjectApplication.class);
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		SpringApplication.run(MultimediaProjectApplication.class, args);
 	}
 }

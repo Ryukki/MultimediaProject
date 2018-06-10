@@ -2,7 +2,10 @@ package com.polsl.multimedia.MultimediaProject.services;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.imaging.tiff.TiffMetadataReader;
+import com.drew.imaging.tiff.TiffReader;
 import com.drew.lang.GeoLocation;
+import com.drew.lang.Rational;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
@@ -13,8 +16,23 @@ import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.common.RationalNumber;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.*;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 import org.apache.commons.io.FileExistsException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,9 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import javax.persistence.EntityExistsException;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -106,6 +122,7 @@ public class PhotoService {
             if(directory.getName().equals("Exif SubIFD") || directory.getName().equals("Exif IFD0")){
                 for (Tag tag : directory.getTags()) {
                     try{
+                        System.out.println(tag.getTagName());
                         switch (tag.getTagName()){
                             case "Image Description":
                                 photo.setDescription(tag.getDescription());
@@ -139,7 +156,8 @@ public class PhotoService {
                             case "Focal Length":
                                 photo.setFocalLength(tag.getDescription());
                                 break;
-                            case "Max Aperture Value":
+                                //aperture
+                            case "F-Number":
                                 photo.setMaxAperture(tag.getDescription());
                                 break;
                             default:
@@ -154,12 +172,104 @@ public class PhotoService {
         return photo;
     }
 
+
+    private void changeExifMetadata(Photo photo) throws IOException, ImageReadException, ImageWriteException {
+        OutputStream os = null;
+        try {
+            File oldPhoto = new File(photo.getNormalResolutionPath());
+            String[] photoParts = photo.getPhotoName().split("\\.");
+            String copyName = photoParts[0] + "copy." + photoParts[1];
+            String copyPath = "resources/" + photo.getUserID().getId() + "/" + copyName;
+            File newPhoto = new File(copyPath);
+            newPhoto.createNewFile();
+
+            TiffOutputSet outputSet = null;
+            ImageMetadata metadata = Imaging.getMetadata(oldPhoto);
+            JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+            if (jpegMetadata != null) {
+                TiffImageMetadata exif = jpegMetadata.getExif();
+
+                if (exif!=null) {
+                    outputSet = exif.getOutputSet();
+                }
+            }
+            if (outputSet == null) {
+                outputSet = new TiffOutputSet();
+            }
+            TiffOutputDirectory exifRoot = outputSet.getOrCreateRootDirectory();
+
+            //exif author
+            exifRoot.removeField(TiffTagConstants.TIFF_TAG_ARTIST);
+            exifRoot.add(TiffTagConstants.TIFF_TAG_ARTIST, photo.getAuthor());
+
+            //exif device model
+            exifRoot.removeField(TiffTagConstants.TIFF_TAG_MODEL);
+            exifRoot.add(TiffTagConstants.TIFF_TAG_MODEL, photo.getCameraName());
+
+            TiffOutputDirectory exifDirectory = outputSet.getOrCreateExifDirectory();
+            if (photo.getDate() != null) {
+                //exif datetime
+                SimpleDateFormat exifFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+                exifDirectory.removeField(TiffTagConstants.TIFF_TAG_DATE_TIME);
+                exifDirectory.add(TiffTagConstants.TIFF_TAG_DATE_TIME, exifFormat.format(photo.getDate()));
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_DATE_TIME_ORIGINAL, exifFormat.format(photo.getDate()));
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_DATE_TIME_DIGITIZED);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_DATE_TIME_DIGITIZED, exifFormat.format(photo.getDate()));
+            }
+            //aperture exif
+            if (photo.getMaxAperture() != null && !photo.getMaxAperture().isEmpty()) {
+                double number = Double.parseDouble(photo.getMaxAperture());
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FNUMBER);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_FNUMBER, RationalNumber.valueOf(number));
+            }
+            if (photo.getExposure() != null && !photo.getExposure().isEmpty()) {
+                //exposure exif
+                String[] params = photo.getExposure().split("/");
+                int divisor = Integer.parseInt(params[1]);
+                int numerator = Integer.parseInt(params[0]);
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME, new RationalNumber(numerator, divisor));
+            }
+            if (photo.getFocalLength() != null && !photo.getFocalLength().isEmpty()) {
+                //focal length exif
+                double number = Double.parseDouble(photo.getFocalLength());
+                exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH);
+                exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, RationalNumber.valueOf(number));
+            }
+            if (photo.getLatitude()!=null && photo.getLongitude()!=null) {
+                outputSet.setGPSInDegrees(photo.getLongitude(), photo.getLatitude());
+            }
+            os = new FileOutputStream(newPhoto);
+            os = new BufferedOutputStream(os);
+            new ExifRewriter().updateExifMetadataLossless(oldPhoto,os,outputSet);
+            os.close();
+            oldPhoto.delete();
+            FileUtils.moveFile(newPhoto, oldPhoto);
+        } finally {
+            os.close();
+        }
+    }
+
+
+
+    private static void printTagValue(final JpegImageMetadata jpegMetadata, final TagInfo tagInfo) {
+        final TiffField field = jpegMetadata.findEXIFValueWithExactMatch(tagInfo);
+        if (field == null) {
+            System.out.println(tagInfo.name + ": " + "Not Found.");
+        } else {
+            System.out.println(tagInfo.name + ": "
+                    + field.getValueDescription());
+        }
+    }
+
     private void createMiniature(File photoFile, String path){
         try {
             BufferedImage img = ImageIO.read(photoFile);
             BufferedImage scaledImg = Scalr.resize(img, 150);
             String extension = FilenameUtils.getExtension(path);
             ImageIO.write(scaledImg, extension, new File(path));
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -194,6 +304,11 @@ public class PhotoService {
         photo.setAuthor(photoParams.getAuthor());
         photo.setDescription(photoParams.getDescription());
         photoRepository.save(photo);
+        try {
+            changeExifMetadata(photo);
+        } catch (IOException | ImageReadException | ImageWriteException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean deletePhoto(AppUser appUser, Long id){
@@ -319,10 +434,6 @@ public class PhotoService {
         if(rules.getLongitudeList()!=null && !rules.getLongitudeList().isEmpty()){
             return false;
         }
-        if(rules.getLatitudeList()!=null && !rules.getLatitudeList().isEmpty()){
-            return false;
-        }
-
-        return true;
+        return rules.getLatitudeList() == null || rules.getLatitudeList().isEmpty();
     }
 }

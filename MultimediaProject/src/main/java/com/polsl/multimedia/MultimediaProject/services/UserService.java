@@ -61,19 +61,12 @@ public class UserService {
 
     public boolean userHasPhoto(AppUser appUser, Photo photo){
         List<Photo> photos = appUser.getPhotos();
-        if(photos.contains(photo)){
-            return true;
-        }else{
-            return false;
-        }
+        return photos.contains(photo);
     }
 
     public boolean checkLoginCredentials(String username, String password){
         AppUser appUser = getUserWithUsername(username);
-        if(appUser !=null && passwordEncoder.matches(password, appUser.getPassword())){
-            return true;
-        }
-        return false;
+        return appUser != null && passwordEncoder.matches(password, appUser.getPassword());
     }
 
     public String basic(String username, String password){
