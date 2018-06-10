@@ -122,6 +122,7 @@ public class PhotoService {
             if(directory.getName().equals("Exif SubIFD") || directory.getName().equals("Exif IFD0")){
                 for (Tag tag : directory.getTags()) {
                     try{
+                        String description = "";
                         System.out.println(tag.getTagName());
                         switch (tag.getTagName()){
                             case "Image Description":
@@ -154,11 +155,13 @@ public class PhotoService {
                                 photo.setExposure(tag.getDescription());
                                 break;
                             case "Focal Length":
-                                photo.setFocalLength(tag.getDescription());
+                                description = tag.getDescription().replace(",",".");
+                                photo.setFocalLength(description);
                                 break;
                                 //aperture
                             case "F-Number":
-                                photo.setMaxAperture(tag.getDescription());
+                                description = tag.getDescription().replace(",",".");
+                                photo.setMaxAperture(description);
                                 break;
                             default:
                                 break;
@@ -171,6 +174,7 @@ public class PhotoService {
         }
         return photo;
     }
+
 
 
     private void changeExifMetadata(Photo photo) throws IOException, ImageReadException, ImageWriteException {
@@ -219,13 +223,15 @@ public class PhotoService {
             }
             //aperture exif
             if (photo.getMaxAperture() != null && !photo.getMaxAperture().isEmpty()) {
-                double number = Double.parseDouble(photo.getMaxAperture());
+                String[] params = photo.getMaxAperture().split("/");
+                double number = Double.parseDouble(params[1]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FNUMBER);
                 exifDirectory.add(ExifTagConstants.EXIF_TAG_FNUMBER, RationalNumber.valueOf(number));
             }
             if (photo.getExposure() != null && !photo.getExposure().isEmpty()) {
                 //exposure exif
-                String[] params = photo.getExposure().split("/");
+                String[] exposureParams = photo.getExposure().split(" ");
+                String[] params = exposureParams[0].split("/");
                 int divisor = Integer.parseInt(params[1]);
                 int numerator = Integer.parseInt(params[0]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME);
@@ -233,7 +239,8 @@ public class PhotoService {
             }
             if (photo.getFocalLength() != null && !photo.getFocalLength().isEmpty()) {
                 //focal length exif
-                double number = Double.parseDouble(photo.getFocalLength());
+                String[] params = photo.getFocalLength().split(" ");
+                double number = Double.parseDouble(params[0]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH);
                 exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, RationalNumber.valueOf(number));
             }
