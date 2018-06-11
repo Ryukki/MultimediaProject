@@ -16,6 +16,7 @@ import com.polsl.multimedia.MultimediaProject.models.AppUser;
 import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.PhotoRepository;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
+import javafx.scene.image.Image;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
@@ -36,12 +37,14 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.NumberUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.persistence.EntityExistsException;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -102,7 +105,7 @@ public class PhotoService {
 
         Metadata metadata = ImageMetadataReader.readMetadata(photoFile);
         photo = readExIf(photo, metadata);
-
+        photo.setAuthor(appUser.getUsername());
         createMiniature(photoFile, miniaturePath);
 
 
@@ -118,10 +121,23 @@ public class PhotoService {
     }
 
     private Photo readExIf(Photo photo, Metadata metadata){
+
+        Collection<GpsDirectory> gpsDirectories = metadata.getDirectoriesOfType(GpsDirectory.class);
+        for (GpsDirectory gpsDirectory : gpsDirectories) {
+            // Try to read out the location, making sure it's non-zero
+            GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+            if (geoLocation != null && !geoLocation.isZero()) {
+                photo.setLatitude(geoLocation.getLatitude());
+                photo.setLongitude(geoLocation.getLongitude());
+                break;
+            }
+        }
+
         for (Directory directory : metadata.getDirectories()) {
             if(directory.getName().equals("Exif SubIFD") || directory.getName().equals("Exif IFD0")){
                 for (Tag tag : directory.getTags()) {
                     try{
+                        String description = "";
                         System.out.println(tag.getTagName());
                         switch (tag.getTagName()){
                             case "Image Description":
@@ -139,26 +155,26 @@ public class PhotoService {
                                 photo.setAuthor(tag.getDescription());
                                 break;
                             case "GPS":
-                                Collection<GpsDirectory> gpsDirectories = metadata.getDirectoriesOfType(GpsDirectory.class);
-                                for (GpsDirectory gpsDirectory : gpsDirectories) {
-                                    // Try to read out the location, making sure it's non-zero
-                                    GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-                                    if (geoLocation != null && !geoLocation.isZero()) {
-                                        photo.setLatitude(geoLocation.getLatitude());
-                                        photo.setLongitude(geoLocation.getLongitude());
-                                        break;
-                                    }
-                                }
+
                                 break;
                             case "Exposure Time":
-                                photo.setExposure(tag.getDescription());
+                                String number = tag.getDescription().split(" ")[0];
+                                try {
+                                    Rational rational = new Rational(Double.parseDouble(number));
+                                    photo.setExposure(rational.toString() + " sec");
+                                }
+                                catch(NumberFormatException e) {
+                                    photo.setExposure(tag.getDescription());
+                                }
                                 break;
                             case "Focal Length":
-                                photo.setFocalLength(tag.getDescription());
+                                description = tag.getDescription().replace(",",".");
+                                photo.setFocalLength(description);
                                 break;
                                 //aperture
                             case "F-Number":
-                                photo.setMaxAperture(tag.getDescription());
+                                description = tag.getDescription().replace(",",".");
+                                photo.setMaxAperture(description);
                                 break;
                             default:
                                 break;
@@ -171,6 +187,7 @@ public class PhotoService {
         }
         return photo;
     }
+
 
 
     private void changeExifMetadata(Photo photo) throws IOException, ImageReadException, ImageWriteException {
@@ -219,13 +236,15 @@ public class PhotoService {
             }
             //aperture exif
             if (photo.getMaxAperture() != null && !photo.getMaxAperture().isEmpty()) {
-                double number = Double.parseDouble(photo.getMaxAperture());
+                String[] params = photo.getMaxAperture().split("/");
+                double number = Double.parseDouble(params[1]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FNUMBER);
                 exifDirectory.add(ExifTagConstants.EXIF_TAG_FNUMBER, RationalNumber.valueOf(number));
             }
             if (photo.getExposure() != null && !photo.getExposure().isEmpty()) {
                 //exposure exif
-                String[] params = photo.getExposure().split("/");
+                String[] exposureParams = photo.getExposure().split(" ");
+                String[] params = exposureParams[0].split("/");
                 int divisor = Integer.parseInt(params[1]);
                 int numerator = Integer.parseInt(params[0]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_EXPOSURE_TIME);
@@ -233,7 +252,8 @@ public class PhotoService {
             }
             if (photo.getFocalLength() != null && !photo.getFocalLength().isEmpty()) {
                 //focal length exif
-                double number = Double.parseDouble(photo.getFocalLength());
+                String[] params = photo.getFocalLength().split(" ");
+                double number = Double.parseDouble(params[0]);
                 exifDirectory.removeField(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH);
                 exifDirectory.add(ExifTagConstants.EXIF_TAG_FOCAL_LENGTH, RationalNumber.valueOf(number));
             }
@@ -436,4 +456,41 @@ public class PhotoService {
         }
         return rules.getLatitudeList() == null || rules.getLatitudeList().isEmpty();
     }
+
+    private class Rational {
+
+        private int num, denom;
+
+        public Rational(double d) {
+            String s = String.valueOf(d);
+            int digitsDec = s.length() - 1 - s.indexOf('.');
+            int denom = 1;
+            for (int i = 0; i < digitsDec; i++) {
+                d *= 10;
+                denom *= 10;
+            }
+
+            int num = (int) Math.round(d);
+            int g = gcd(num, denom);
+            this.num = num / g;
+            this.denom = denom /g;
+        }
+
+        public Rational(int num, int denom) {
+            this.num = num;
+            this.denom = denom;
+        }
+
+        public String toString() {
+            return String.valueOf(num) + "/" + String.valueOf(denom);
+        }
+
+        public int gcd(int num, int denom) {
+            BigInteger b1 = BigInteger.valueOf(num);
+            BigInteger b2 = BigInteger.valueOf(denom);
+            BigInteger gcd = b1.gcd(b2);
+            return gcd.intValue();
+        }
+    }
+
 }

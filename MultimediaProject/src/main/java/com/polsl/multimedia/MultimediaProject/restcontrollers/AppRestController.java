@@ -7,7 +7,6 @@ import com.polsl.multimedia.MultimediaProject.models.Photo;
 import com.polsl.multimedia.MultimediaProject.repositories.UserRepository;
 import com.polsl.multimedia.MultimediaProject.services.PhotoService;
 import com.polsl.multimedia.MultimediaProject.services.UserService;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
